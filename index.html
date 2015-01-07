@@ -1,0 +1,75 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/static/style.css">  
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>    
+    <script>
+      $( document ).ready(function() {
+        
+        start();
+        
+        function start() {
+            $.get( "searchterms", function( data ) {                
+                var options = $("#term");
+                options.empty();
+                $.each(data, function() {
+                    options.append($("<option />").val(this).text(this));
+                });
+                getData($('#term :selected').text());
+            });   
+        }
+          
+        $('#refresh').click(function(){
+            start();
+        });
+                   
+        $("#term").change(function () {
+            var term = this.value;
+            getData(term);              
+        });  
+          
+        $('#show').change(function() {
+                if($(this).is(":checked")) {
+                    $('.wrapperviewed').css({"display": "block"});
+                } else {
+                  $('.wrapperviewed').css({"display": "none"});
+                }
+        });          
+        
+          function getData(term) {
+            $('#mainwrapp').html('');
+            $.get( "twitter/" + term, function( tweets ) {
+                for(var i = 0; i < tweets.length; i++) {
+                  var tweet = tweets[i];
+                    if(tweet.viewed === true) {
+                      var clas = 'wrapperviewed';
+                    } else {
+                      var clas = 'wrapper';
+                    }
+                  $('#mainwrapp').append('<div id="' + tweet._id  +  '" class="'+ clas +'"  tabindex="' + (i+1) + '">\
+                  <div class="topleft"> <img src="' + tweet.profile_image_url + '"> </div>\
+                  <div class="topright"><a tabindex="-1" href="https://twitter.com/' + tweet.screen_name + '" target="_blank">' + tweet.screen_name + '</a> </div>\
+                  <div class="nextright"> ' + tweet.name  + ' </div>\
+                  <div class="nextright1"> ' + tweet.text + ' </div></div>');
+                }
+
+                $( ".wrapper" ).focusin(function() {
+                    var self = $(this);
+                   $.get( "viewed/" + $(this).attr('id'), function( data ) {                
+                     self.removeClass("wrapper").addClass("wrapperviewed", 1000); 
+                   });          
+                });              
+            });                 
+          }         
+      });
+    </script>
+  </head>
+  <body>
+    <input type="checkbox" id="show" name="show" value="viewed">Show viewed
+    <select  id="term">
+
+    </select>
+    <input type="button" id="refresh" value="Refresh">
+    <div id="mainwrapp" class="mainwrapp">
+    </div>
+  </body>
+</html>
