@@ -14,6 +14,7 @@ var Tweet = mongoose.model('twitter', {
     name: String,
     screen_name: String,
     search_term: String,
+    favorite: Boolean,
     viewed: Boolean
 });
 
@@ -42,6 +43,45 @@ app.get('/viewed/:id', function (req, res) {
       // at this point person is null.
     });
     
+})
+
+app.get('/setfav/:id', function (req, res) {
+    var id = req.param('id');
+
+    var query = {"_id": id};
+    var update = {favorite : true};
+
+    Tweet.findOneAndUpdate(query, update, /*options,*/ function(err, tweet) {
+      if (err) {
+        console.log('got an error');
+      } else {
+          console.log(tweet);
+          res.send(' ok');
+      }
+    });
+})
+
+app.get('/removefav/:id', function (req, res) {
+    var id = req.param('id');
+
+    var query = {"_id": id};
+    var update = {favorite : false};
+
+    Tweet.findOneAndUpdate(query, update, /*options,*/ function(err, tweet) {
+      if (err) {
+        console.log('got an error');
+      } else {
+          res.send(' ok');
+      }
+    });
+})
+
+app.get('/getfav', function (req, res) {
+    var q = Tweet.find({favorite : true}).sort('-id_str');
+        
+    q.exec(function(err, docs) {
+        res.send(docs);
+    });
 })
 
 app.get('/twitter/:term', function (req, res) {

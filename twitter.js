@@ -3,6 +3,7 @@ var express = require('express');
 var app = express();
 var config = require('./config')
 var mongoose = require('mongoose');
+var fs = require('fs');
 
 console.log()
 mongoose.connect(config.mongoose.url);
@@ -23,7 +24,8 @@ var Tweet = mongoose.model('twitter', {
     name: String,
     screen_name: String,
     search_term: String,
-    viewed: Boolean
+    viewed: Boolean,
+    favorite: Boolean
 });
 
 // T.get('search/tweets', { q: 'qlikview since_id:551875079588806657', count: 1 }, function(err, data, response) {
@@ -41,12 +43,20 @@ var Tweet = mongoose.model('twitter', {
 // })
 
 //https://twitter.com/QlikView/status/551388771196088321
-var search_term = 'qlikview';
+var search_term = 'CES2015';
 var i = 0;
 
-//var stream = T.stream('statuses/filter', { track: search_term })
-// stream.on('tweet', function (newtweet) {
+var stream = T.stream('statuses/filter', { track: search_term })
+stream.on('tweet', function (newtweet) {
+  i++;
+    if(i === 1) {
+        fs.writeFile('test1.txt', JSON.stringify(newtweet), function(err) {
+          console.log('saved');    
+        });
+//         console.log(newtweet)
+    } else {
         
+    }
 //         var tweet = new Tweet({ 
 //             id_str: newtweet.id_str,
 //             text: newtweet.text,
@@ -55,7 +65,8 @@ var i = 0;
 //             name: newtweet.user.name,
 //             screen_name: newtweet.user.screen_name,
 //             search_term: search_term,
-//             viewed: false
+//             viewed: false,
+//             favorite: false
 //         });
     
 //         tweet.save(function (err) {
@@ -64,7 +75,7 @@ var i = 0;
 //             console.log(i + ' tweets saved!');
 //         });        
         
-// })
+})
 
 app.get('/', function (req, res) {
   res.send(i.toString());

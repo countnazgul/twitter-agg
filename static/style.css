@@ -31,6 +31,19 @@
     border-top-style: solid;
     border-top-width: 1px;*/
 }
+.faved1 {
+    height: 112px;
+    width: 500px;
+    margin-top: 10px;
+    border-bottom: #aaaaaa;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    background-color: #ffffff;
+    display: block;
+    /*border-top: #ff0000;
+    border-top-style: solid;
+    border-top-width: 1px;*/
+}
 .topLeft {
     height: 50px;
     width: 50px;

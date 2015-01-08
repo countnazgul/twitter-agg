@@ -1,19 +1,20 @@
 <html>
   <head>
     <link rel="stylesheet" href="/static/style.css">
-    <script src="/static/progressbar.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>    
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>      
+    <script src="/static/progressbar.js"></script>               
+    <script src="/static/jquery.tweetParser.js"></script>
     <script>
       $( document ).ready(function() {
-        
+        $("p.tweets").tweetParser();
           
         (function(){
-            setInterval(start, 30000);
+            setInterval(start, 300000);
         })();
           
         start();
                             
-          function progress() {
+        function progress() {
               $('#example-line-container').html('');
               var line = new ProgressBar.Line('#example-line-container', {
                   color: '#FCB03C',
@@ -21,11 +22,11 @@
               });
 
               line.animate(1, {
-                  duration: 30000
+                  duration: 300000
               }, function() {
                   //progress();
               });          
-          }          
+          }                  
           
         function start() {
 
@@ -57,46 +58,105 @@
                 }
         });          
         
-          function getData(term) {
+          var docsCount = 0;
+          function titleChange() {
+              document.title = '(' + docsCount + ') tweets' ;
+              //console.log('(' + docsCount + ') tweets');
+          }
+          
+         function getData(term) {
+            docsCount = 0;
             $("#LoadingImage").show();
             //$('#example-line-container').html('');
             $('#mainwrapp').html('');
             $.get( "twitter/" + term, function( tweets ) {
                 $("#LoadingImage").hide();
-                //progress();
+
                 for(var i = 0; i < tweets.length; i++) {
                   var tweet = tweets[i];
                     if(tweet.viewed === true) {
                       var clas = 'wrapperviewed';
                     } else {
                       var clas = 'wrapper';
+                        docsCount++;
+                        titleChange();
                     }
+                    
                   $('#mainwrapp').append('<div id="' + tweet._id  +  '" class="'+ clas +'"  tabindex="' + (i+1) + '">\
                   <div class="topleft"> <img src="' + tweet.profile_image_url + '"> </div>\
-                  <div class="topright"><a tabindex="-1" href="https://twitter.com/' + tweet.screen_name + '" target="_blank">' + tweet.screen_name + '</a> </div>\
-                  <div class="nextright"> ' + tweet.name  + ' </div>\
-                  <div class="nextright1"> ' + tweet.text + ' </div></div>');
+                  <div class="topright"><div style="float: left"><a tabindex="-1" href="https://twitter.com/' + tweet.screen_name + '" target="_blank">' + tweet.screen_name + '</a></div>\
+                  <div style="float: right"><div class="fav" id="'+tweet._id+'">Fav</div></div>\
+                  </div>\
+                  <div class="nextright"> ' + tweet.name  + ' </div> \
+                  <div class="nextright1"><p class="tweets">' + tweet.text + '</p></div></div>');
                 }
-
+                
+                $("p.tweets").tweetParser();
+                
                 $( ".wrapper" ).focusin(function() {
                     var self = $(this);
                    $.get( "viewed/" + $(this).attr('id'), function( data ) {                
                      self.removeClass("wrapper").addClass("wrapperviewed", 1000); 
+                       docsCount--;
+                       titleChange();
                    });          
-                });              
+                }); 
+                
+                $( ".fav" ).click(function() {
+                    var self = $(this);
+                   $.get( "setfav/" + $(this).attr('id'), function( data ) {    
+                       self.css('background-color', '#a9f2ab');
+                       $('#favsmain').append();
+                     //self.removeClass("wrapper").addClass("wrapperviewed", 1000); 
+                     //  docsCount--;
+                     //  titleChange();
+                     //console.log(data);
+                   });          
+                });                 
+                
             });                 
+             
+$.get( "getfav", function( tweets ) {
+                $('#favsmain').html('');
+                for(var i = 0; i < tweets.length; i++) {
+                  var tweet = tweets[i];
+                  var clas = 'faved1';
+                    
+                  $('#favsmain').append('<div id="' + tweet._id  +  '" class="'+ clas +'"  tabindex="' + (i+1) + '">\
+                  <div class="topleft"> <img src="' + tweet.profile_image_url + '"> </div>\
+                  <div class="topright"><div style="float: left"><a tabindex="-1" href="https://twitter.com/' + tweet.screen_name + '" target="_blank">' + tweet.screen_name + '</a></div>\
+                  <div style="float: right"><div class="faved" style="background-color: #a9f2ab" id="'+tweet._id+'">Fav</div></div>\
+                  </div>\
+                  <div class="nextright"> ' + tweet.name  + ' </div> \
+                  <div class="nextright1"><p class="tweets">' + tweet.text + '</p></div></div>');
+                }
+
+                $("p.tweets").tweetParser(); 
+    
+                $( ".faved" ).click(function() {
+                    var self = $(this);
+                    var t = $('#' + self.attr('id'));
+                   $.get( "removefav/" + $(this).attr('id'), function( data ) {
+                       $('#' + self.attr('id')).remove();
+                   });          
+                });     
+});
+             
           }         
       });
     </script>
   </head>
   <body>
-    <div class="example-container" id="example-line-container"></div> 
-    <input type="checkbox" id="show" name="show" value="viewed">Show viewed
-    <select  id="term">
+      <div class="example-container" id="example-line-container"></div>
+      <div style="float: left">        
+        <input type="checkbox" id="show" name="show" value="viewed">Show viewed
+        <select  id="term">
 
-    </select>
-    <!--<input type="button" id="refresh" value="Refresh">-->
-      <div id="LoadingImage" style="display: none; height: 50px;width: 50px;"><img src="/static/365.gif" /></div>
-    <div id="mainwrapp" class="mainwrapp"></div>
+        </select>
+        <!--<input type="button" id="refresh" value="Refresh">-->
+          <div id="LoadingImage" style="display: none; height: 50px;width: 50px;"><img src="/static/365.gif" /></div>
+        <div id="mainwrapp" class="mainwrapp"></div>          
+      </div>
+    <div id="favsmain" class="mainwrapp" style="margin-top: 20px; padding-left: 10px"></div>
   </body>
 </html>
