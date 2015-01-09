@@ -43,37 +43,29 @@ var Tweet = mongoose.model('twitter', {
 // })
 
 //https://twitter.com/QlikView/status/551388771196088321
-var search_term = 'CES2015';
+var search_term = 'qlikview';
 var i = 0;
 
 var stream = T.stream('statuses/filter', { track: search_term })
 stream.on('tweet', function (newtweet) {
-  i++;
-    if(i === 1) {
-        fs.writeFile('test1.txt', JSON.stringify(newtweet), function(err) {
-          console.log('saved');    
+//  i++;
+        var tweet = new Tweet({ 
+            id_str: newtweet.id_str,
+            text: newtweet.text,
+            created_at: newtweet.created_at,
+            profile_image_url: newtweet.user.profile_image_url,
+            name: newtweet.user.name,
+            screen_name: newtweet.user.screen_name,
+            search_term: search_term,
+            viewed: false,
+            favorite: false
         });
-//         console.log(newtweet)
-    } else {
-        
-    }
-//         var tweet = new Tweet({ 
-//             id_str: newtweet.id_str,
-//             text: newtweet.text,
-//             created_at: newtweet.created_at,
-//             profile_image_url: newtweet.user.profile_image_url,
-//             name: newtweet.user.name,
-//             screen_name: newtweet.user.screen_name,
-//             search_term: search_term,
-//             viewed: false,
-//             favorite: false
-//         });
     
-//         tweet.save(function (err) {
-//           if (err) console.log(error);
-//             i++;
-//             console.log(i + ' tweets saved!');
-//         });        
+        tweet.save(function (err) {
+          if (err) console.log(error);
+            i++;
+            console.log(i + ' tweets saved!');
+        });        
         
 })
 
