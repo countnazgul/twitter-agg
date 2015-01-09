@@ -1,15 +1,16 @@
 <html>
   <head>
     <link rel="stylesheet" href="/static/style.css">
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>      
     <script src="/static/progressbar.js"></script>               
     <script src="/static/jquery.tweetParser.js"></script>
     <script>
       $( document ).ready(function() {
         $("p.tweets").tweetParser();
-          
+        var searchTerm;
         (function(){
-            setInterval(start, 300000);
+            setInterval(start, 30000);
         })();
           
         start();
@@ -22,7 +23,7 @@
               });
 
               line.animate(1, {
-                  duration: 300000
+                  duration: 30000
               }, function() {
                   //progress();
               });          
@@ -32,12 +33,24 @@
 
             progress();
             $.get( "searchterms", function( data ) {                
-                var options = $("#term");
-                options.empty();
+                var navigation = $("#navterms");
+                navigation.empty();
                 $.each(data, function() {
-                    options.append($("<option />").val(this).text(this));
+                    navigation.append('<a href="#" class="term">'+ this +'</a><br>');
+                    //options.append($("<option />").val(this).text(this));
                 });
-                getData($('#term :selected').text());
+                if(searchTerm) {
+                  getData(searchTerm);
+                } else {
+                  searchTerm = data[0];
+                  getData(data[0]);                  
+                } 
+                
+             $( ".term" ).click(function() {
+                 searchTerm = $(this).text();
+                 getData(searchTerm);
+             });                  
+                
             });   
         }
           
@@ -116,7 +129,7 @@
                 
             });                 
              
-$.get( "getfav", function( tweets ) {
+$.get( "getfav/" + searchTerm, function( tweets ) {
                 $('#favsmain').html('');
                 for(var i = 0; i < tweets.length; i++) {
                   var tweet = tweets[i];
@@ -139,20 +152,24 @@ $.get( "getfav", function( tweets ) {
                    $.get( "removefav/" + $(this).attr('id'), function( data ) {
                        $('#' + self.attr('id')).remove();
                    });          
-                });     
-});
-             
-          }         
+                });           
+});                          
+          }     
+          
+       
       });
     </script>
   </head>
   <body>
       <div class="example-container" id="example-line-container"></div>
-      <div style="float: left">        
-        <input type="checkbox" id="show" name="show" value="viewed">Show viewed
-        <select  id="term">
-
-        </select>
+  <div id="navigation">
+      <input type="checkbox" id="show" name="show" value="viewed">Show viewed
+      <div id="navterms">
+      
+      </div>
+  </div>      
+      <div style="float: left">                
+        <!-- <select  id="term"></select> -->
         <!--<input type="button" id="refresh" value="Refresh">-->
           <div id="LoadingImage" style="display: none; height: 50px;width: 50px;"><img src="/static/365.gif" /></div>
         <div id="mainwrapp" class="mainwrapp"></div>          

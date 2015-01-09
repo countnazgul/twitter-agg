@@ -76,8 +76,9 @@ app.get('/removefav/:id', function (req, res) {
     });
 })
 
-app.get('/getfav', function (req, res) {
-    var q = Tweet.find({favorite : true}).sort('-id_str');
+app.get('/getfav/:term', function (req, res) {
+    var term = req.param('term');
+    var q = Tweet.find({favorite : true, search_term : term}).sort('-id_str');
         
     q.exec(function(err, docs) {
         res.send(docs);
