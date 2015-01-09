@@ -4,6 +4,7 @@ var app = express();
 var config = require('./config')
 var mongoose = require('mongoose');
 var fs = require('fs');
+var async = require('async');
 
 console.log()
 mongoose.connect(config.mongoose.url);
@@ -28,45 +29,45 @@ var Tweet = mongoose.model('twitter', {
     favorite: Boolean
 });
 
-// T.get('search/tweets', { q: 'qlikview since_id:551875079588806657', count: 1 }, function(err, data, response) {
-//     if (err) console.log(err)
-
-//     for(var i = 0; i < 1; i++) { //data.statuses.length
-//         var twit = data.statuses[i];
-//         console.log(twit.id_str)
-//         console.log(twit.text)
-//         console.log(twit.created_at)
-//         console.log(twit.user.profile_image_url)
-//         console.log(twit.user.name)
-//         console.log(twit.user.screen_name)
-//     }
-// })
-
-//https://twitter.com/QlikView/status/551388771196088321
 var search_term = 'qlikview';
+var terms = search_term.split(',')
 var i = 0;
 
 var stream = T.stream('statuses/filter', { track: search_term })
 stream.on('tweet', function (newtweet) {
-//  i++;
-        var tweet = new Tweet({ 
-            id_str: newtweet.id_str,
-            text: newtweet.text,
-            created_at: newtweet.created_at,
-            profile_image_url: newtweet.user.profile_image_url,
-            name: newtweet.user.name,
-            screen_name: newtweet.user.screen_name,
-            search_term: search_term,
-            viewed: false,
-            favorite: false
-        });
-    
-        tweet.save(function (err) {
-          if (err) console.log(error);
-            i++;
-            console.log(i + ' tweets saved!');
-        });        
+
+    async.each(terms, function(term, callback) {
+        t = newtweet.text.toLowerCase();
         
+        if(t.indexOf(term) > -1) {
+            var tweet = new Tweet({ 
+                id_str: newtweet.id_str,
+                text: newtweet.text,
+                created_at: newtweet.created_at,
+                profile_image_url: newtweet.user.profile_image_url,
+                name: newtweet.user.name,
+                screen_name: newtweet.user.screen_name,
+                search_term: term,
+                viewed: false,
+                favorite: false
+            });
+
+            tweet.save(function (err) {
+              if (err) console.log(error);
+                i++;
+                console.log(newtweet.text);
+                console.log(i + ' tweets saved!');
+                callback();    
+            });                          
+        } else {
+            callback();
+        }
+        
+    }, function(err){
+        
+        console.log('sss');
+    });       
+    
 })
 
 app.get('/', function (req, res) {

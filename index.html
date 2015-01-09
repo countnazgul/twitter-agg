@@ -71,7 +71,7 @@
                 }
         });          
         
-          var docsCount = 0;
+          var docsCount;
           function titleChange() {
               document.title = '(' + docsCount + ') tweets' ;
               //console.log('(' + docsCount + ') tweets');
@@ -91,9 +91,10 @@
                       var clas = 'wrapperviewed';
                     } else {
                       var clas = 'wrapper';
-                        docsCount++;
-                        titleChange();
+                        docsCount++;                        
                     }
+                    
+                    titleChange();
                     
                   $('#mainwrapp').append('<div id="' + tweet._id  +  '" class="'+ clas +'"  tabindex="' + (i+1) + '">\
                   <div class="topleft"> <img src="' + tweet.profile_image_url + '"> </div>\

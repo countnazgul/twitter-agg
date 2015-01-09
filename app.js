@@ -86,7 +86,7 @@ app.get('/getfav/:term', function (req, res) {
 })
 
 app.get('/twitter/:term', function (req, res) {
-    var term = req.param('term');
+    var term = req.param('term').toLowerCase();
     var q = Tweet.find({search_term : term}).sort('-id_str').limit(100);
     
     q.exec(function(err, docs) {
