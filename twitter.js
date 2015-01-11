@@ -26,49 +26,62 @@ var Tweet = mongoose.model('twitter', {
     screen_name: String,
     search_term: String,
     viewed: Boolean,
-    favorite: Boolean
+    favorite: Boolean,
+    blocked: Boolean
 });
 
-var search_term = 'qlikview';
+var search_term = 'thinkaboutme';
 var terms = search_term.split(',')
 var i = 0;
 
-var stream = T.stream('statuses/filter', { track: search_term })
+var stream = T.stream('statuses/filter', { track: search_term });
+
 stream.on('tweet', function (newtweet) {
-
-    async.each(terms, function(term, callback) {
-        t = newtweet.text.toLowerCase();
-        
-        if(t.indexOf(term) > -1) {
-            var tweet = new Tweet({ 
-                id_str: newtweet.id_str,
-                text: newtweet.text,
-                created_at: newtweet.created_at,
-                profile_image_url: newtweet.user.profile_image_url,
-                name: newtweet.user.name,
-                screen_name: newtweet.user.screen_name,
-                search_term: term,
-                viewed: false,
-                favorite: false
-            });
-
-            tweet.save(function (err) {
-              if (err) console.log(error);
-                i++;
-                console.log(newtweet.text);
-                console.log(i + ' tweets saved!');
-                callback();    
-            });                          
-        } else {
+    fs.readFile('blocked.txt', function(err, data) {
+        var blocks = data.toString();
+        blocks = blocks.split(',');
+        var blocked = false;
+        async.each(blocks, function(block, callback) {
+            if(newtweet.user.name.toLowerCase() === block) {
+                blocked = true;
+            } else {
+                blocked = false;
+            }    
             callback();
-        }
-        
-    }, function(err){
-        
-        console.log('sss');
-    });       
+       }, function(err){
+            async.each(terms, function(term, callback) {
+                t = newtweet.text.toLowerCase();
+
+                if(t.indexOf(term) > -1) {
+                    var tweet = new Tweet({ 
+                        id_str: newtweet.id_str,
+                        text: newtweet.text,
+                        created_at: newtweet.created_at,
+                        profile_image_url: newtweet.user.profile_image_url,
+                        name: newtweet.user.name,
+                        screen_name: newtweet.user.screen_name,
+                        search_term: term,
+                        viewed: false,
+                        favorite: false,
+                        blocked: blocked
+                    });
+
+                    tweet.save(function (err) {
+                        if (err) console.log(error);
+                        i++;
+                        console.log(i + ' tweets saved!');
+                        callback();    
+                    }); 
+                } else {
+                    callback();
+                }
+
+            }, function(err){
+            });       
+        });      
+    });
+});
     
-})
 
 app.get('/', function (req, res) {
   res.send(i.toString());

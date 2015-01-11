@@ -44,6 +44,17 @@
     border-top-style: solid;
     border-top-width: 1px;*/
 }
+.open{
+    float: left;
+}
+.fav{
+    float: left;
+    padding-left: 5px    
+}
+.block{
+    float: right;
+    padding-left: 5px
+}
 .topLeft {
     height: 50px;
     width: 50px;

@@ -77,16 +77,22 @@
               //console.log('(' + docsCount + ') tweets');
           }
           
+         var maxTweetId = 0;
          function getData(term) {
             docsCount = 0;
-            $("#LoadingImage").show();
+            //$("#LoadingImage").show();
             //$('#example-line-container').html('');
-            $('#mainwrapp').html('');
-            $.get( "twitter/" + term, function( tweets ) {
-                $("#LoadingImage").hide();
-
+            //$('#mainwrapp').html('');            
+             
+            $.get( "twitter/" + term + "/"+ maxTweetId , function( tweets ) {
+                //console.log(tweets);
+                if(tweets.length > 0) {
+                //$("#LoadingImage").hide();
+                var tweetid = [];
+                
                 for(var i = 0; i < tweets.length; i++) {
                   var tweet = tweets[i];
+                    tweetid.push(tweet.id_str);
                     if(tweet.viewed === true) {
                       var clas = 'wrapperviewed';
                     } else {
@@ -96,26 +102,35 @@
                     
                     titleChange();
                     
-                  $('#mainwrapp').append('<div id="' + tweet._id  +  '" class="'+ clas +'"  tabindex="' + (i+1) + '">\
+                  $('#mainwrapp').prepend('<div id="' + tweet._id  +  '" class="'+ clas +'"  tabindex="' + (i+1) + '" data-tweetid="' + tweet.id_str + '">\
                   <div class="topleft"> <img src="' + tweet.profile_image_url + '"> </div>\
                   <div class="topright"><div style="float: left"><a tabindex="-1" href="https://twitter.com/' + tweet.screen_name + '" target="_blank">' + tweet.screen_name + '</a></div>\
-                  <div style="float: right"><div class="fav" id="'+tweet._id+'">Fav</div></div>\
+                  <div style="float: right">\
+                  <div class="open" id="'+tweet.screen_name+'" data.tweetid="'+tweet.id_str+'">\
+                  <a href="https://twitter.com/'+tweet.screen_name+'/status/'+tweet.id_str+'" target="_blank">View</a></div>\
+                  <div class="block" id="'+tweet.screen_name+'">Block</div>\
+                  <div class="fav" id="'+tweet._id+'">Fav</div></div>\
                   </div>\
                   <div class="nextright"> ' + tweet.name  + ' </div> \
                   <div class="nextright1"><p class="tweets">' + tweet.text + '</p></div></div>');
                 }
                 
+                maxTweetId = Math.max.apply(Math, tweetid);
+                //console.log(maxTweetId);
+                
                 $("p.tweets").tweetParser();
                 
-                $( ".wrapper" ).focusin(function() {
+                $( ".wrapper" ).focusout(function() {
                     var self = $(this);
+                    console.log();
                    $.get( "viewed/" + $(this).attr('id'), function( data ) {                
                      self.removeClass("wrapper").addClass("wrapperviewed", 1000); 
                        docsCount--;
                        titleChange();
                    });          
                 }); 
-                
+                }
+                               
                 $( ".fav" ).click(function() {
                     var self = $(this);
                    $.get( "setfav/" + $(this).attr('id'), function( data ) {    
@@ -126,7 +141,13 @@
                      //  titleChange();
                      //console.log(data);
                    });          
-                });                 
+                });               
+                
+                $( ".block" ).click(function() {
+                    var self = $(this);
+                   $.get( "block/" + $(this).attr('id'), function( data ) {    
+                   });          
+                });                               
                 
             });                 
              
@@ -136,7 +157,7 @@ $.get( "getfav/" + searchTerm, function( tweets ) {
                   var tweet = tweets[i];
                   var clas = 'faved1';
                     
-                  $('#favsmain').append('<div id="' + tweet._id  +  '" class="'+ clas +'"  tabindex="' + (i+1) + '">\
+                  $('#favsmain').prepend('<div id="' + tweet._id  +  '" class="'+ clas +'"  tabindex="' + (i+1) + '">\
                   <div class="topleft"> <img src="' + tweet.profile_image_url + '"> </div>\
                   <div class="topright"><div style="float: left"><a tabindex="-1" href="https://twitter.com/' + tweet.screen_name + '" target="_blank">' + tweet.screen_name + '</a></div>\
                   <div style="float: right"><div class="faved" style="background-color: #a9f2ab" id="'+tweet._id+'">Fav</div></div>\
@@ -172,7 +193,7 @@ $.get( "getfav/" + searchTerm, function( tweets ) {
       <div style="float: left">                
         <!-- <select  id="term"></select> -->
         <!--<input type="button" id="refresh" value="Refresh">-->
-          <div id="LoadingImage" style="display: none; height: 50px;width: 50px;"><img src="/static/365.gif" /></div>
+          <!-- <div id="LoadingImage" style="display: none; height: 50px;width: 50px;"><img src="/static/365.gif" /></div> -->
         <div id="mainwrapp" class="mainwrapp"></div>          
       </div>
     <div id="favsmain" class="mainwrapp" style="margin-top: 20px; padding-left: 10px"></div>
